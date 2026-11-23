@@ -1,0 +1,63 @@
+name: Publish to npm
+
+on:
+  push:
+    branches: [main]
+    paths: [package.nix]
+  # Publishes an older release without touching main, e.g. a missed 1.5.x.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Guacamole release to publish (empty for the version on main)
+        required: false
+
+permissions:
+  contents: read
+  # npm trusted publishing logs in with the OIDC token and signs the build attestation with it.
+  id-token: write
+
+concurrency: publish
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Pin the version from the dispatch input
+        if: inputs.version != ''
+        env:
+          VERSION: ${{ inputs.version }}
+        run: nix shell nixpkgs#just nixpkgs#nix-update -c just update "--version=$VERSION"
+
+      - name: Build and smoke-test
+        id: build
+        run: |
+          nix-build default.nix -A guacamole-common-js -o result
+          echo "version=$(nix eval --raw -f default.nix guacamole-common-js.version)" >> "$GITHUB_OUTPUT"
+
+      # Trusted publishing needs npm 11.5 or newer.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Publish
+        env:
+          VERSION: ${{ steps.build.outputs.version }}
+        run: |
+          if npm view "guacamole-common-js@$VERSION" version | grep -q .; then
+            echo "$VERSION is already on npm"
+            exit 0
+          fi
+          latest=$(npm view guacamole-common-js dist-tags.latest)
+          # A release older than the current latest must not take over the latest tag.
+          tag=latest
+          if [ "$(printf '%s\n%s\n' "$latest" "$VERSION" | sort -V | tail -n1)" != "$VERSION" ]; then
+            tag=backport
+          fi
+          npm publish ./result --provenance --access public --tag "$tag"
