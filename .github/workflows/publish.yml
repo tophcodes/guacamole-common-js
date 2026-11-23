@@ -1,0 +1,45 @@
+name: Publish to npm
+
+on:
+  push:
+    branches: [release-workflow]
+    paths: [package.nix]
+  # Reruns a publish that failed, e.g. before the trusted publisher existed on npm.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # npm trusted publishing logs in with the OIDC token and signs the build attestation with it.
+  id-token: write
+
+concurrency: publish
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: cachix/install-nix-action@v31
+
+      - name: Build and smoke-test
+        id: build
+        run: |
+          nix build -L -o result
+          echo "version=$(nix eval --raw .#default.version)" >> "$GITHUB_OUTPUT"
+
+      # Trusted publishing needs npm 11.5 or newer.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Publish
+        env:
+          VERSION: ${{ steps.build.outputs.version }}
+        run: |
+          if npm view "guacamole-common-js@$VERSION" version | grep -q .; then
+            echo "$VERSION is already on npm"
+            exit 0
+          fi
+          npm publish ./result --provenance --access public
