@@ -1,68 +1,58 @@
 [![npm version](https://img.shields.io/npm/v/guacamole-common-js.svg)](https://www.npmjs.com/package/guacamole-common-js) [![downloads](https://img.shields.io/npm/dt/guacamole-common-js.svg)](https://www.npmjs.com/package/guacamole-common-js)
 
-# What is guacamole-common-js?
+# guacamole-common-js
 
-guacamole-common-js is the core JavaScript library used by the Guacamole web
-application.
+guacamole-common-js is the core JavaScript library of the
+[Apache Guacamole](https://guacamole.apache.org/) web application. It provides
+an HTTP and WebSocket tunnel for Guacamole protocol data, a protocol client,
+and synchronized drawing layers.
 
-guacamole-common-js provides an efficient HTTP tunnel for transporting
-protocol data between JavaScript and the web application, as well as an
-implementation of a Guacamole protocol client and abstract synchronized
-drawing layers.
-
-## What is this fork for?
-
-This is a fork of [glyptodon/guacamole-client](https://github.com/glyptodon/guacamole-client)
-meant for distribution via npm. Prior to a version being submitted to npm a gulp buildscript
-combines all `guacamole-common-js` files and minifies them.
-
-None of the guacamole project files besides the combined javascript sources are included in
-the npm release, so you won't have to download any files you don't need. You can read which
-files/folders are omitted in the `.npmignore` file.
-
-You can install this library via npm:
+Apache Guacamole does not publish this library to npm. This repository builds
+it from the upstream release tags of
+[apache/guacamole-client](https://github.com/apache/guacamole-client) and
+publishes it as an npm package with CommonJS and ES module entry points.
 
 ```
-npm install --save guacamole-common-js
+npm install guacamole-common-js
 ```
 
 ```js
-const Guacamole = require('guacamole-common-js');
-
-// ... or ES6
 import Guacamole from 'guacamole-common-js';
+
+// or CommonJS
+const Guacamole = require('guacamole-common-js');
 ```
 
-> Previously this fork was available as `padarom-guacamole-common-js`, which has been deprecated
-in favor of the new version of the fork which is much easier to maintain thanks to the gulp buildscript.
+Each bundle also exists minified as `dist/{esm,cjs}/guacamole-common.min.js`.
 
-#### Version numbers
-I intend to keep the npm version numbers identical to the guacamole version that I publish. This doesn't always work 100% in case something is missing or at fault, so I will need to release a patch. These patch versions still keep the same version number, but add a letter designating the patch (e.g. `1.0.0-b`). In case the guacamole upstream ever releases any patches with a similar version number, I can't guarantee that the patch letter of the original Guacamole sources and the release of this fork match up for that specific version.
+## Version numbers
 
-#### Fork origin
-Apparently the original repository `[glyptodon/guacamole-client](https://github.com/glyptodon/guacamole-client)` is no longer maintained and the actual guacamole client is now maintained at `[apache/guacamole-client](https://github.com/apache/guacamole-client)`. Unfortunately there is no way to rewrite the fork origin on GitHub, so this repository will show the wrong origin. In order to update from upstream, you may do the following:
+The npm version equals the Apache Guacamole release the package is built from.
+Versions up to 1.5.0 came from an earlier build of this repository and
+sometimes carry a letter suffix (`1.4.0-b`) for repackaging fixes.
+
+## How the package is built
+
+`package.nix` fetches the release tag, concatenates the license header and all
+modules in file name order (the same order upstream uses for its own bundle),
+adds one export line per module format, and minifies with esbuild. A smoke test
+loads all four bundles in Node.js and checks the `Guacamole` namespace.
 
 ```
-$ git remote add upstream git@github.com:apache/guacamole-client.git
-$ git pull upstream master --rebase
+just test      # build the package and run the smoke test
+just update    # bump to the newest Guacamole release
+just check     # everything CI checks
 ```
 
-## Documentation
-Distribution-specific packages are available from the files section of the main
-project page:
+A GitHub Actions job looks for a new upstream release every Monday and opens a
+pull request that bumps `package.nix`. Merging it publishes the new version to
+npm. The publish workflow also accepts a version as manual input, which
+publishes an older release without changing `main`.
 
-    http://sourceforge.net/projects/guacamole/files/
+## Reporting problems
 
-Distribution-specific documentation is provided on the Guacamole wiki:
+Bugs in the library itself belong to the Apache Guacamole project:
+https://issues.apache.org/jira/browse/GUACAMOLE/
 
-    http://guac-dev.org/
-
-# Reporting problems
-
-_I am not a maintainer or contributor to the original guacamole repository. I only created this fork and published it to npm._
-
-Please report any bugs encountered by opening a new ticket at the Trac system hosted at:
-
-    http://guac-dev.org/trac/
-
-Any bugs or questions to this fork specifically can be asked via issues on GitHub.
+Problems with the npm package, such as a missing file or a broken export,
+belong in this repository's issues.
