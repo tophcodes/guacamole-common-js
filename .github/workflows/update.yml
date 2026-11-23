@@ -1,0 +1,40 @@
+name: Update upstream
+
+on:
+  # Mondays at 12:00 UTC, look for a new Apache Guacamole release.
+  schedule:
+    - cron: "0 12 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: cachix/install-nix-action@v31
+
+      - name: Bump to the newest release
+        run: nix run .#update
+
+      - name: Build and smoke-test
+        id: build
+        run: |
+          nix build -L --no-link
+          echo "version=$(nix eval --raw .#default.version)" >> "$GITHUB_OUTPUT"
+
+      - uses: peter-evans/create-pull-request@v8
+        with:
+          branch: update/guacamole
+          commit-message: "chore: update guacamole-common-js to ${{ steps.build.outputs.version }}"
+          title: "chore: update guacamole-common-js to ${{ steps.build.outputs.version }}"
+          body: |
+            Apache Guacamole released ${{ steps.build.outputs.version }}: https://github.com/apache/guacamole-client/releases/tag/${{ steps.build.outputs.version }}
+
+            Merging this pull request publishes the version to npm.
+          reviewers: tophcodes
+          delete-branch: true
