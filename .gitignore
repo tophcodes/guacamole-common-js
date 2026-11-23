@@ -1,8 +1,2 @@
-*~
-target/
-
-# Fork specific
-dist/*
-node_modules
-package-lock.json
-yarn.lock
+.direnv/
+result

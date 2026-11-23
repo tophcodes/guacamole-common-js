@@ -1,55 +1,39 @@
 {
-  "name": "guacamole-common-js",
-  "version": "1.5.0",
-  "description": "The Guacamole javascript client",
-  "type": "module",
-  "main": "dist/cjs/guacamole-common.js",
-  "module": "dist/esm/guacamole-common.js",
-  "exports": {
-    ".": {
-      "import": "./dist/esm/guacamole-common.js",
-      "require": "./dist/cjs/guacamole-common.js"
-    }
-  },
-  "scripts": {
-    "build": "npm run build:esm && npm run build:cjs",
-    "build:esm:concat": "cat guacamole-common-js/src/main/webapp/modules/*.js > dist/esm/guacamole-common.js",
-    "build:esm:append": "echo 'export default Guacamole;' >> dist/esm/guacamole-common.js",
-    "build:esm:minify": "minify dist/esm/guacamole-common.js > dist/esm/guacamole-common.min.js",
-    "build:esm": "npm run build:esm:concat && npm run build:esm:append && npm run build:esm:minify",
-    "build:cjs:concat": "cat guacamole-common-js/src/main/webapp/modules/*.js > dist/cjs/guacamole-common.js",
-    "build:cjs:append": "echo 'module.exports = Guacamole;' >> dist/cjs/guacamole-common.js",
-    "build:cjs:minify": "minify dist/cjs/guacamole-common.js > dist/cjs/guacamole-common.min.js",
-    "build:cjs": "npm run build:cjs:concat && npm run build:cjs:append && npm run build:cjs:minify",
-    "prepublishOnly": "npm run build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/padarom/guacamole-common-js.git"
-  },
-  "files": [
-    "dist",
-    "README.md"
-  ],
-  "keywords": [
-    "guacamole",
-    "common",
-    "js",
-    "guac",
-    "remote",
-    "desktop",
-    "vnc",
-    "rdp",
-    "ssh",
-    "telnet"
-  ],
-  "author": "Christopher Mühl <christopher@muehl.dev>",
-  "license": "Apache 2.0",
-  "bugs": {
-    "url": "https://issues.apache.org/jira/browse/GUACAMOLE/"
-  },
-  "homepage": "https://github.com/padarom/guacamole-common-js#readme",
-  "devDependencies": {
-    "minify": "^9.2.0"
-  }
+	"name": "guacamole-common-js",
+	"description": "The Guacamole javascript client",
+	"type": "module",
+	"main": "dist/cjs/guacamole-common.js",
+	"module": "dist/esm/guacamole-common.js",
+	"exports": {
+		".": {
+			"import": "./dist/esm/guacamole-common.js",
+			"require": "./dist/cjs/guacamole-common.js"
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/tophcodes/guacamole-common-js.git"
+	},
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"keywords": [
+		"guacamole",
+		"common",
+		"js",
+		"guac",
+		"remote",
+		"desktop",
+		"vnc",
+		"rdp",
+		"ssh",
+		"telnet"
+	],
+	"author": "Christopher Mühl <christopher@muehl.dev>",
+	"license": "Apache-2.0",
+	"bugs": {
+		"url": "https://issues.apache.org/jira/browse/GUACAMOLE/"
+	},
+	"homepage": "https://github.com/tophcodes/guacamole-common-js#readme"
 }
